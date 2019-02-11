@@ -12,8 +12,9 @@ let gc = scene.querySelector('#garbageCan');
 
 if (mobile) {
     console.log("Mobile Device Detected");
-    //cam.setAttribute("twoway-motion", "speed", 35);
+    camRig.setAttribute("twoway-motion", "speed", 35);
     camRig.setAttribute("tilt-turn", "criticalAngle", 12);
+    sCursor.setAttribute('cursor','rayOrigin', 'entity');
     console.log("Mobile Controls Enabled");
 } else{
     console.log("Non-VR Device Connected");
