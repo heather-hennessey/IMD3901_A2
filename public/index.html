@@ -2,8 +2,8 @@
 <html>
         <head>
                 <meta charset="utf-8">
-                <title>Hello, WebVR! • A-Frame</title>
-                <meta name="description" content="Hello, WebVR! • A-Frame">
+                <title>Spray Painter</title>
+                <meta name="description" content="AFRAME Spray Painter">
                 <script src="https://aframe.io/releases/0.8.2/aframe.min.js"></script>
                 <script src="https://rawgit.com/Ctrl-Alt-Zen/aframe-mobile-controls/master/components/tilt-turn/tilt-turn.js"></script>         <!--Tilt-turn-->
                 <script src="https://cdn.rawgit.com/donmccurdy/aframe-physics-system/v3.3.0/dist/aframe-physics-system.min.js"></script>        <!--Physics-->
@@ -21,7 +21,9 @@
 
                         init: function()
                         {
-                            this.onGrabStart = this.onGrabStart.bind(this);
+                          const Context_AF = this;  
+                          Context_AF.soundElem = document.querySelector('#spraySound');
+                          this.onGrabStart = this.onGrabStart.bind(this);
                             this.onGrabEnd = this.onGrabEnd.bind(this);
                             this.onHoverStart = this.onHoverStart.bind(this);
                             this.onHoverEnd = this.onHoverEnd.bind(this);
@@ -42,13 +44,25 @@
                         onGrabStart: function(evt)
                         {
                             this.el.sceneEl.canvas.addEventListener( 'mousemove', this.followMouse);
+                            var paint = document.querySelector('#spray');
+                            paint.setAttribute('particle-system', 'color', this.el.getAttribute('material').color);
+                            this.el.setAttribute('particle-system', paint.getAttribute('particle-system'));
+                            this.el.setAttribute('particle-system', 'enabled', 'true');
+                            this.el.setAttribute('cursor', paint.getAttribute('cursor'));
+                            this.el.setAttribute('raycaster', paint.getAttribute('raycaster'));
+                            
+                            
+                            this.soundElem.components['sound'].stopSound(); //stop first so we aren't trying to play more than once at same time
+                            this.soundElem.components['sound'].playSound();
+
                         },
                         onGrabEnd: function(evt)
                         {
                             this.el.sceneEl.canvas.removeEventListener('mousemove', this.followMouse);
-
-                            // console.log(this.el);
-                            // this.el.object3D.position.set(this.el.position.x, this.el.position.y, this.el.position.z); 
+                            this.el.removeAttribute('particle-system');
+                            this.el.removeAttribute('cursor');
+                            this.el.removeAttribute('raycaster');
+                            this.el.removeAttribute('line');
                         },
                         onHoverStart: function(evt)
                         {
@@ -75,7 +89,7 @@
                         init: function()
                         {
                             // Add scripts to the 'scriptSrc' list below so they are loaded after the scene is created
-                            scriptSrc = ["interactions.js"]
+                            scriptSrc = ["js/interactions.js"]
                             var head= document.getElementsByTagName('head')[0];
                             for (var i = 0; i < scriptSrc.length; i++) {
                                 newScript = document.createElement('script');
@@ -84,21 +98,26 @@
                             }
                         }
                     });
-                    
+                
+
+
                 </script>
               </head>
               
               <body>
                 
-                <a-scene loadscripts>
+                <a-scene id="main" loadscripts>
                 <!---------------------------------    MIXIN (Interactable Object)    -------------------------------------->
                 <a-assets>
-                <a-mixin id="can" geometry="primitive: cylinder; radius: 0.08; height: 0.3;"
-                        hoverable grabbable draggable droppable interactable shadow>
+                <a-asset-item crossorigin="anonymous" id="canSpray" src="assets/Spraying Deodorant-SoundBible.com-64193501.mp3" response-type="arraybuffer"></a-asset-item>
+                <a-mixin id="can" geometry="primitive: cylinder; radius: 0.08; height: 0.3;" 
+                        hoverable grabbable draggable droppable interactable shadow  >
                 </a-mixin>
+
+                
                 </a-assets>
                 <!---------------------------------    ENVIRONMENT     -------------------------------------->
-                <a-plane position="0 0 5" width="30" height="30" rotation="-90 0 0" color="#a5a5a5" shadow></a-plane>
+                <a-plane position="0 0 5" static-body width="30" height="30" rotation="-90 0 0" color="#a5a5a5" shadow></a-plane>
             
                 <a-sky color="#ECECEC"></a-sky>
                 <a-entity   id="sky"
@@ -118,9 +137,9 @@
                                     colliderEndEventProperty: clearedEls;">
                         <a-entity id="sceneCursor" cursor="rayOrigin: mouse; fuseTimeout: 500"></a-entity>                    
                     </a-entity>
-                    <a-entity id="bCan" mixin="can" position="1 -1 -1.25" material="color: blue"></a-entity>
-                    <a-entity id="rCan" mixin="can" position="0 -1 -1.25" material="color: red"></a-entity>
-                    <a-entity id="gCan" mixin="can" position="-1 -1 -1.25" material="color: green"></a-entity>
+                    <a-entity id="bCan" mixin="can" position="1 -1 -1.25" material="color: #3a3a48"></a-entity>
+                    <a-entity id="rCan" mixin="can" position="0 -1 -1.25" material="color: #3a3a48"></a-entity>
+                    <a-entity id="gCan" mixin="can" position="-1 -1 -1.25" material="color: #3a3a48"></a-entity>
                 </a-entity>
                   
 
@@ -131,15 +150,21 @@
 
                 <!---------------------------------    OBJECTS     -------------------------------------->
                 
-                <a-entity id="wall" geometry="primitive:plane;height:4;width:10" position="0 1.16842 -2.61869" material="color:#572015;"></a-entity>                
-                <a-entity id="garbageCan" geometry="primitive:cylinder;radius:0.2;height:0.5" position="3 0.24216 -2.31734" material="color:#3a3a48;"></a-entity>
-                <a-entity id="spray" position="0 0.4 -1.8" 
-                            particle-system="color:#EF0000, #EF0000;
-                                            size:.08;
-                                            accelerationValue:1 1 1;
-                                            maxAge:.3;
-                                            rotationAxis: x;
-                                            rotationAngle: 1.5"></a-entity>     
+                <a-entity id="brick" class="static" geometry="primitive:plane;height:4;width:10" static-body="shape:box" position="0 1.16842 -2.61869" ></a-entity>                
+                
+                <a-entity id="spraySound" sound="src:#canSpray"></a-entity>
+                <a-entity id="garbageCan" class="static" geometry="primitive:cylinder;radius:0.2;height:0.5" position="3 0.24216 -2.31734" material="color:#3a3a48;"></a-entity>
+                <a-entity id="spray" position="0 1 -1" cursor raycaster="objects: .static;"
+                          particle-system="maxParticleCount: 5500; 
+                                          size: 0.02;
+                                          rotationAxis: x;
+                                          rotationAngle: 1.7;
+                                          maxAge: 0.5;
+                                          preset:color;
+                                          velocitySpread: 5 5 5;
+                                          enabled: false"></a-entity>
+                
                 </a-scene>
+
               </body>           
 </html>

@@ -1,11 +1,13 @@
 console.log("Interactions.js Connected");
 
 let mobile = AFRAME.utils.device.isMobile();
-let scene = document.querySelector('a-scene');
+let scene = document.querySelector('#main');
 let camRig = scene.querySelector('#camRig');
 let cam = scene.querySelector('#cam');
 let sCursor = cam.querySelector('#sceneCursor');
 let canvas = scene.canvas;
+let sWall = scene.querySelector('#brick');
+let sound = scene.querySelector('#canSpray');
 // ************************** DEVICE DETECT ***************************** // 
 
 if (mobile) {
@@ -16,3 +18,14 @@ if (mobile) {
 } else{
     console.log("Non-VR Device Connected");
 }
+
+sWall.addEventListener('raycaster-intersected', function(event){
+    //var newColor = event.detail.el.attributes.material.value.color;
+    //event.detail.intersection.object.material.color = newColor;
+    //event.detail.intersection.face.color.setRGB(255, 255, 0);
+   // event.detail.intersection.object.material.needsUpdate = true;
+   //console.log(event);
+   newColor = event.detail.el.getAttribute("material").color;
+   sWall.setAttribute('material', 'color', newColor);
+   console.log(newColor);
+});
