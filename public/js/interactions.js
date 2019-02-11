@@ -1,13 +1,13 @@
 console.log("Interactions.js Connected");
 
 let mobile = AFRAME.utils.device.isMobile();
-let scene = document.querySelector('#main');
+let scene = document.querySelector('a-scene');
 let camRig = scene.querySelector('#camRig');
 let cam = scene.querySelector('#cam');
 let sCursor = cam.querySelector('#sceneCursor');
 let canvas = scene.canvas;
 let sWall = scene.querySelector('#brick');
-let sound = scene.querySelector('#canSpray');
+let gc = scene.querySelector('#garbageCan');
 // ************************** DEVICE DETECT ***************************** // 
 
 if (mobile) {
@@ -27,5 +27,10 @@ sWall.addEventListener('raycaster-intersected', function(event){
    //console.log(event);
    newColor = event.detail.el.getAttribute("material").color;
    sWall.setAttribute('material', 'color', newColor);
-   console.log(newColor);
+   
+});
+
+gc.addEventListener('raycaster-intersected', function(event){
+   scene.removeChild(event.detail.el); 
+
 });
